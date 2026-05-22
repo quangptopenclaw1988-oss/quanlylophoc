@@ -207,6 +207,35 @@ body {
     background: #5a6268;
 }
 
+.merge-row {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    align-items: flex-end;
+}
+
+.btn-swap {
+    background: var(--primary);
+    color: white;
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    padding: 0;
+    border-radius: 50%;
+    font-size: 1rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: none;
+    transition: background 0.2s;
+}
+
+.btn-swap:hover {
+    background: var(--primary-dark);
+}
+
 .btn-danger {
     background: var(--danger);
     color: white;

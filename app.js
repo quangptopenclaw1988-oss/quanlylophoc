@@ -110,6 +110,18 @@ const copyInfo = document.getElementById('copyInfo');
 const copyStudentCount = document.getElementById('copyStudentCount');
 const copyEnrollmentBtn = document.getElementById('copyEnrollmentBtn');
 
+// Merge Students
+const mergeFromSearch = document.getElementById('mergeFromSearch');
+const mergeFromStudent = document.getElementById('mergeFromStudent');
+const mergeFromDropdown = document.getElementById('mergeFromDropdown');
+const mergeToSearch = document.getElementById('mergeToSearch');
+const mergeToStudent = document.getElementById('mergeToStudent');
+const mergeToDropdown = document.getElementById('mergeToDropdown');
+const mergeInfo = document.getElementById('mergeInfo');
+const mergePreview = document.getElementById('mergePreview');
+const mergeSwapBtn = document.getElementById('mergeSwapBtn');
+const mergeStudentBtn = document.getElementById('mergeStudentBtn');
+
 // Attendance
 const attendCourse = document.getElementById('attendCourse');
 const attendMonth = document.getElementById('attendMonth');
@@ -280,6 +292,22 @@ discountType.addEventListener('change', () => {
 copyFromCourse.addEventListener('change', updateCopyInfo);
 copyToCourse.addEventListener('change', updateCopyInfo);
 copyEnrollmentBtn.addEventListener('click', handleCopyEnrollment);
+
+// Merge Students event listeners
+mergeFromSearch.addEventListener('input', () => handleMergeStudentSearch(mergeFromSearch, mergeFromStudent, mergeFromDropdown));
+mergeFromSearch.addEventListener('focus', () => handleMergeStudentSearch(mergeFromSearch, mergeFromStudent, mergeFromDropdown));
+mergeToSearch.addEventListener('input', () => handleMergeStudentSearch(mergeToSearch, mergeToStudent, mergeToDropdown));
+mergeToSearch.addEventListener('focus', () => handleMergeStudentSearch(mergeToSearch, mergeToStudent, mergeToDropdown));
+document.addEventListener('click', (e) => {
+    if (!mergeFromSearch.contains(e.target) && !mergeFromDropdown.contains(e.target)) {
+        mergeFromDropdown.style.display = 'none';
+    }
+    if (!mergeToSearch.contains(e.target) && !mergeToDropdown.contains(e.target)) {
+        mergeToDropdown.style.display = 'none';
+    }
+});
+mergeSwapBtn.addEventListener('click', handleMergeSwap);
+mergeStudentBtn.addEventListener('click', handleMergeStudents);
 
 // Payment event listeners
 paymentCourseSelect.addEventListener('change', () => {
@@ -1519,7 +1547,8 @@ function handleCourseSubmit(e) {
 
     const name = document.getElementById('courseName').value.trim();
     const instructor = document.getElementById('courseInstructor').value.trim();
-    const month = document.getElementById('courseMonth').value;
+    const monthVal = document.getElementById('courseMonth').value;
+    const month = monthVal ? parseInt(monthVal) : null;
     const fee = parseFloat(document.getElementById('courseFee').value);
     const maxStudentsVal = document.getElementById('courseMaxStudents').value;
     const maxStudents = maxStudentsVal ? parseInt(maxStudentsVal) : 30;
@@ -1611,7 +1640,8 @@ function renderCourseTable() {
 
     let filtered = courses;
     if (filterMonth) {
-        filtered = filtered.filter(c => c.month === parseInt(filterMonth));
+        const filterMonthNum = parseInt(filterMonth);
+        filtered = filtered.filter(c => parseInt(c.month) === filterMonthNum);
     }
     if (filterStatus) {
         filtered = filtered.filter(c => c.status === filterStatus);
@@ -1686,7 +1716,7 @@ function handleQuickAddCourse() {
     }
 
     // Check if duplicate course (same name + month)
-    const duplicate = courses.find(c => c.name === source.name && c.month === parseInt(newMonth));
+    const duplicate = courses.find(c => c.name === source.name && parseInt(c.month) === parseInt(newMonth));
     if (duplicate) {
         alert(`Đã tồn tại khóa học "${source.name} - Tháng ${newMonth}".`);
         return;
@@ -1718,7 +1748,7 @@ function renderQuickManageTable() {
     }
 
     quickManageSection.style.display = 'block';
-    const monthCourses = courses.filter(c => c.month === month);
+    const monthCourses = courses.filter(c => parseInt(c.month) === month);
 
     if (monthCourses.length === 0) {
         quickManageTableBody.innerHTML = '';
@@ -2174,6 +2204,179 @@ function handleCopyEnrollment() {
     saveEnrollments();
     renderAll();
     alert(`Đã sao chép thành công ${newStudentIds.length} học viên sang khóa học "${toCourse.name}".`);
+}
+
+// ==================== MERGE STUDENTS FUNCTIONS ====================
+function handleMergeStudentSearch(searchInput, hiddenInput, dropdown) {
+    const query = searchInput.value.trim().toLowerCase();
+    hiddenInput.value = '';
+    updateMergePreview();
+
+    if (!query) {
+        dropdown.style.display = 'none';
+        return;
+    }
+
+    const matches = students.filter(s =>
+        s.name.toLowerCase().includes(query) ||
+        (s.phone && s.phone.includes(query))
+    ).slice(0, 10);
+
+    if (matches.length === 0) {
+        dropdown.innerHTML = '<div class="autocomplete-item" style="color: var(--text-light);">Không tìm thấy</div>';
+        dropdown.style.display = 'block';
+        return;
+    }
+
+    dropdown.innerHTML = matches.map(s => {
+        const phone = s.phone ? ` - ${s.phone}` : '';
+        return `<div class="autocomplete-item" data-id="${s.id}" data-name="${s.name}">
+            <strong>${highlightMatch(s.name, query)}</strong>
+            <span class="student-info">${phone}</span>
+        </div>`;
+    }).join('');
+
+    dropdown.style.display = 'block';
+
+    dropdown.querySelectorAll('.autocomplete-item[data-id]').forEach(item => {
+        item.addEventListener('click', () => {
+            hiddenInput.value = item.dataset.id;
+            searchInput.value = item.dataset.name;
+            dropdown.style.display = 'none';
+            updateMergePreview();
+        });
+    });
+}
+
+function handleMergeSwap() {
+    const tmpId = mergeFromStudent.value;
+    const tmpName = mergeFromSearch.value;
+
+    mergeFromStudent.value = mergeToStudent.value;
+    mergeFromSearch.value = mergeToSearch.value;
+
+    mergeToStudent.value = tmpId;
+    mergeToSearch.value = tmpName;
+
+    updateMergePreview();
+}
+
+function updateMergePreview() {
+    const fromId = mergeFromStudent.value;
+    const toId = mergeToStudent.value;
+
+    if (fromId && toId) {
+        if (fromId === toId) {
+            mergeInfo.style.display = 'block';
+            mergePreview.textContent = 'Không thể gộp cùng một học viên.';
+            mergePreview.style.color = '#f44336';
+            return;
+        }
+
+        const fromStudent = students.find(s => s.id === fromId);
+        const toStudent = students.find(s => s.id === toId);
+
+        // Check which is newer
+        const fromIsNewer = new Date(fromStudent.createdAt) > new Date(toStudent.createdAt);
+        const newerStudent = fromIsNewer ? fromStudent : toStudent;
+        const olderStudent = fromIsNewer ? toStudent : fromStudent;
+
+        const newerEnrollments = enrollments.filter(e => e.studentId === newerStudent.id);
+        const newerAttendances = attendances.filter(a => a.studentId === newerStudent.id);
+        const newerPayments = paymentRecords.filter(r => r.studentId === newerStudent.id);
+
+        mergeInfo.style.display = 'block';
+        mergePreview.style.color = 'var(--primary-dark)';
+        mergePreview.innerHTML = `<strong>${newerStudent.name}</strong> (tạo sau) → <strong>${olderStudent.name}</strong> (tạo trước)<br>` +
+            `Dữ liệu sẽ chuyển: ${newerEnrollments.length} ghi danh, ${newerAttendances.length} điểm danh, ${newerPayments.length} thanh toán.`;
+    } else {
+        mergeInfo.style.display = 'none';
+    }
+}
+
+function handleMergeStudents() {
+    if (!checkPermission('students', 'delete')) return;
+
+    const fromId = mergeFromStudent.value;
+    const toId = mergeToStudent.value;
+
+    if (!fromId || !toId) {
+        alert('Vui lòng chọn cả hai học viên.');
+        return;
+    }
+
+    if (fromId === toId) {
+        alert('Không thể gộp cùng một học viên.');
+        return;
+    }
+
+    const fromStudent = students.find(s => s.id === fromId);
+    const toStudent = students.find(s => s.id === toId);
+
+    // Determine which student is newer (will be deleted)
+    const fromIsNewer = new Date(fromStudent.createdAt) > new Date(toStudent.createdAt);
+    const newerId = fromIsNewer ? fromId : toId;
+    const olderId = fromIsNewer ? toId : fromId;
+    const newerStudent = fromIsNewer ? fromStudent : toStudent;
+    const olderStudent = fromIsNewer ? toStudent : fromStudent;
+
+    const newerEnrollments = enrollments.filter(e => e.studentId === newerId);
+    const newerAttendances = attendances.filter(a => a.studentId === newerId);
+    const newerPayments = paymentRecords.filter(r => r.studentId === newerId);
+
+    if (!confirm(`Gộp "${newerStudent.name}" vào "${olderStudent.name}"?\n\n` +
+        `- Chuyển ${newerEnrollments.length} ghi danh\n` +
+        `- Chuyển ${newerAttendances.length} điểm danh\n` +
+        `- Chuyển ${newerPayments.length} thanh toán\n` +
+        `- Xóa "${newerStudent.name}"\n\n` +
+        `Hành động này không thể hoàn tác.`)) {
+        return;
+    }
+
+    // Transfer enrollments (skip if already enrolled in same course)
+    newerEnrollments.forEach(e => {
+        const exists = enrollments.some(en => en.studentId === olderId && en.courseId === e.courseId);
+        if (!exists) {
+            e.studentId = olderId;
+        }
+    });
+    // Remove enrollments that couldn't be transferred (duplicates)
+    enrollments = enrollments.filter(e => e.studentId !== newerId);
+
+    // Transfer attendances
+    attendances.forEach(a => {
+        if (a.studentId === newerId) a.studentId = olderId;
+    });
+
+    // Transfer payments (skip if older student already has payment for same course+month)
+    paymentRecords.forEach(r => {
+        if (r.studentId === newerId) {
+            const exists = paymentRecords.some(pr => pr.studentId === olderId && pr.courseId === r.courseId && pr.month === r.month);
+            if (!exists) {
+                r.studentId = olderId;
+            }
+        }
+    });
+    // Remove payment records that couldn't be transferred
+    paymentRecords = paymentRecords.filter(r => r.studentId !== newerId);
+
+    // Delete the newer student
+    students = students.filter(s => s.id !== newerId);
+
+    // Save everything
+    saveStudents();
+    saveEnrollments();
+    saveAttendances();
+    savePaymentRecords();
+
+    mergeFromStudent.value = '';
+    mergeToStudent.value = '';
+    mergeFromSearch.value = '';
+    mergeToSearch.value = '';
+    mergeInfo.style.display = 'none';
+
+    renderAll();
+    alert(`Đã gộp thành công "${newerStudent.name}" vào "${olderStudent.name}".`);
 }
 
 // ==================== PAYMENT FUNCTIONS ====================

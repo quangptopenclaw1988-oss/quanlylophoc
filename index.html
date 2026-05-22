@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản Lý Học Viên Trung Tâm</title>
+    <script>
+        (function() {
+            if (window.location.search.indexOf('desktop=1') !== -1) return;
+            var ua = navigator.userAgent || '';
+            var isMobile = /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+            if (isMobile || window.innerWidth < 768) {
+                window.location.replace('mobile.html');
+            }
+        })();
+    </script>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 </head>
@@ -217,6 +227,37 @@
                         <button class="btn btn-primary" id="importAllBtn">Import Tất Cả</button>
                         <button class="btn btn-secondary" id="cancelImportBtn">Hủy</button>
                     </div>
+                </div>
+            </section>
+
+            <!-- Merge Students -->
+            <section class="form-section">
+                <h2>Gộp Học Viên</h2>
+                <p class="form-hint">Gộp hai học viên thành một khi phát hiện trùng. Hệ thống sẽ chuyển toàn bộ dữ liệu (ghi danh, điểm danh, thanh toán) từ học viên được chọn sang học viên còn lại, sau đó xóa học viên đã chuyển.</p>
+                <div class="merge-row">
+                    <div class="form-group" style="flex:1;">
+                        <label for="mergeFromSearch">Học Viên Cần Chuyển Thông Tin</label>
+                        <div class="autocomplete-wrapper">
+                            <input type="text" id="mergeFromSearch" placeholder="Gõ tên học viên để tìm..." autocomplete="off">
+                            <input type="hidden" id="mergeFromStudent">
+                            <div class="autocomplete-dropdown" id="mergeFromDropdown"></div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-swap" id="mergeSwapBtn" title="Đổi chiều">⇄</button>
+                    <div class="form-group" style="flex:1;">
+                        <label for="mergeToSearch">Học Viên Nhận Thông Tin</label>
+                        <div class="autocomplete-wrapper">
+                            <input type="text" id="mergeToSearch" placeholder="Gõ tên học viên để tìm..." autocomplete="off">
+                            <input type="hidden" id="mergeToStudent">
+                            <div class="autocomplete-dropdown" id="mergeToDropdown"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="copy-info" id="mergeInfo" style="display:none;">
+                    <span id="mergePreview"></span>
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-primary" id="mergeStudentBtn">Gộp Học Viên</button>
                 </div>
             </section>
 

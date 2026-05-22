@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Điểm Danh - Mobile</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --danger: #f44336;
+            --bg: #f5f7fb;
+            --card: #ffffff;
+            --border: #e0e0e0;
+            --text: #1a1a2e;
+            --text-light: #6c757d;
+            --success: #4caf50;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Header */
+        .header {
+            background: var(--primary);
+            color: white;
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .header h1 {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .header-user {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        .btn-logout {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .btn-logout:active { background: rgba(255,255,255,0.3); }
+
+        /* Main */
+        .main {
+            padding: 1rem;
+            padding-bottom: 5rem;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        }
+
+        .card h2 {
+            font-size: 1rem;
+            margin-bottom: 0.75rem;
+            color: var(--primary-dark);
+        }
+
+        /* Form */
+        label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 0.3rem;
+        }
+
+        select, input[type="date"], input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 0.7rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: white;
+            color: var(--text);
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236c757d' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.7rem center;
+            padding-right: 2rem;
+        }
+
+        .form-group { margin-bottom: 0.75rem; }
+        .form-group:last-child { margin-bottom: 0; }
+
+        .form-row {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .form-row .form-group { flex: 1; }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.7rem 1.2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+        }
+
+        .btn:active { transform: scale(0.98); }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:active { background: var(--primary-dark); }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:active { background: #43a047; }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-row .btn { flex: 1; }
+
+        /* Attendance list */
+        .attendance-list {
+            list-style: none;
+        }
+
+        .attendance-item {
+            display: flex;
+            align-items: center;
+            padding: 0.85rem 0.5rem;
+            border-bottom: 1px solid var(--border);
+            gap: 0.75rem;
+        }
+
+        .attendance-item:last-child { border-bottom: none; }
+
+        .attendance-item input[type="checkbox"] {
+            width: 28px;
+            height: 28px;
+            min-width: 28px;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        .attendance-item .student-name {
+            font-size: 1rem;
+            font-weight: 500;
+            flex: 1;
+        }
+
+        .attendance-item .student-count {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            white-space: nowrap;
+        }
+
+        /* Date list */
+        .date-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .date-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: var(--primary);
+            color: white;
+            padding: 0.4rem 0.7rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+
+        .date-tag .delete-date {
+            background: rgba(255,255,255,0.3);
+            border: none;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            font-size: 0.75rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+
+        /* Login */
+        .login-overlay {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--primary), #7209b7);
+            padding: 1rem;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem 1.5rem;
+            width: 100%;
+            max-width: 360px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .login-icon {
+            font-size: 2.5rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-header h2 {
+            font-size: 1.3rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .login-header p {
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+
+        .login-btn {
+            margin-top: 0.5rem;
+        }
+
+        .login-error {
+            color: var(--danger);
+            font-size: 0.85rem;
+            text-align: center;
+            min-height: 1.2rem;
+        }
+
+        /* Save bar */
+        .save-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 0.75rem 1rem;
+            background: white;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+
+        /* Summary */
+        .summary {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .summary-item {
+            flex: 1;
+            text-align: center;
+            padding: 0.5rem;
+            border-radius: 8px;
+            background: var(--bg);
+        }
+
+        .summary-item .num {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .summary-item .lbl {
+            font-size: 0.7rem;
+            color: var(--text-light);
+        }
+
+        /* Hidden */
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <!-- Login -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-card">
+            <div class="login-header">
+                <span class="login-icon">&#127891;</span>
+                <h2>Điểm Danh</h2>
+                <p>Hệ Thống Quản Lý Học Viên</p>
+            </div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginUsername">Tên Đăng Nhập</label>
+                    <input type="text" id="loginUsername" placeholder="Tên đăng nhập" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Mật Khẩu</label>
+                    <input type="password" id="loginPassword" placeholder="Mật khẩu" required autocomplete="current-password">
+                </div>
+                <p class="login-error" id="loginError"></p>
+                <button type="submit" class="btn btn-primary login-btn">Đăng Nhập</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- App -->
+    <div id="appLayout" class="hidden">
+        <div class="header">
+            <div>
+                <h1>Điểm Danh</h1>
+                <span class="header-user" id="headerUser"></span>
+            </div>
+            <button class="btn-logout" id="logoutBtn">Đăng Xuất</button>
+        </div>
+
+        <div class="main">
+            <!-- Course & Date Selection -->
+            <div class="card">
+                <h2>Chọn Khóa Học</h2>
+                <div class="form-group">
+                    <label for="courseSelect">Khóa Học</label>
+                    <select id="courseSelect">
+                        <option value="">-- Chọn khóa học --</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="monthFilter">Tháng</label>
+                        <select id="monthFilter">
+                            <option value="">-- Chọn tháng --</option>
+                            <option value="1">Tháng 1</option>
+                            <option value="2">Tháng 2</option>
+                            <option value="3">Tháng 3</option>
+                            <option value="4">Tháng 4</option>
+                            <option value="5">Tháng 5</option>
+                            <option value="6">Tháng 6</option>
+                            <option value="7">Tháng 7</option>
+                            <option value="8">Tháng 8</option>
+                            <option value="9">Tháng 9</option>
+                            <option value="10">Tháng 10</option>
+                            <option value="11">Tháng 11</option>
+                            <option value="12">Tháng 12</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Date -->
+            <div class="card" id="addDateCard">
+                <h2>Thêm Ngày Điểm Danh</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="newDate">Ngày</label>
+                        <input type="date" id="newDate">
+                    </div>
+                    <div class="form-group" style="display:flex; align-items:flex-end;">
+                        <button class="btn btn-primary" id="addDateBtn">Thêm</button>
+                    </div>
+                </div>
+                <div id="dateListContainer" class="hidden">
+                    <label style="margin-top:0.75rem;">Ngày đã thêm</label>
+                    <div class="date-list" id="dateList"></div>
+                </div>
+            </div>
+
+            <!-- Attendance -->
+            <div class="card hidden" id="attendanceCard">
+                <h2 id="attendanceTitle">Điểm Danh</h2>
+                <div class="summary" id="attendanceSummary">
+                    <div class="summary-item">
+                        <div class="num" id="totalStudents">0</div>
+                        <div class="lbl">Tổng</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="num" id="todayPresent">0</div>
+                        <div class="lbl">Có mặt</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="num" id="todayAbsent">0</div>
+                        <div class="lbl">Vắng</div>
+                    </div>
+                </div>
+                <div style="margin-top:0.75rem;">
+                    <label for="dateSelect">Chọn ngày để điểm danh</label>
+                    <select id="dateSelect">
+                        <option value="">-- Chọn ngày --</option>
+                    </select>
+                </div>
+                <ul class="attendance-list" id="attendanceList" style="margin-top:0.75rem;"></ul>
+            </div>
+
+            <div class="empty-message" id="emptyMessage">Chọn khóa học để bắt đầu điểm danh.</div>
+
+            <div style="text-align:center; margin-top:1rem;">
+                <a href="index.html?desktop=1" style="color:var(--text-light); font-size:0.8rem;">Giao diện máy tính</a>
+            </div>
+        </div>
+
+        <!-- Save Bar -->
+        <div class="save-bar hidden" id="saveBar">
+            <button class="btn btn-success" id="saveBtn">Lưu Điểm Danh</button>
+        </div>
+    </div>
+
+    <script>
+    (function() {
+        'use strict';
+
+        // ==================== DATA ====================
+        let courses = JSON.parse(localStorage.getItem('courses')) || [];
+        let students = JSON.parse(localStorage.getItem('students')) || [];
+        let enrollments = JSON.parse(localStorage.getItem('enrollments')) || [];
+        let attendances = JSON.parse(localStorage.getItem('attendances')) || [];
+        let admins = JSON.parse(localStorage.getItem('admins')) || [];
+        let currentAdmin = JSON.parse(sessionStorage.getItem('currentAdmin')) || null;
+
+        // ==================== ELEMENTS ====================
+        const loginOverlay = document.getElementById('loginOverlay');
+        const loginForm = document.getElementById('loginForm');
+        const loginUsername = document.getElementById('loginUsername');
+        const loginPassword = document.getElementById('loginPassword');
+        const loginError = document.getElementById('loginError');
+        const appLayout = document.getElementById('appLayout');
+        const headerUser = document.getElementById('headerUser');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const courseSelect = document.getElementById('courseSelect');
+        const monthFilter = document.getElementById('monthFilter');
+        const newDate = document.getElementById('newDate');
+        const addDateBtn = document.getElementById('addDateBtn');
+        const dateListContainer = document.getElementById('dateListContainer');
+        const dateList = document.getElementById('dateList');
+        const attendanceCard = document.getElementById('attendanceCard');
+        const attendanceTitle = document.getElementById('attendanceTitle');
+        const attendanceSummary = document.getElementById('attendanceSummary');
+        const totalStudents = document.getElementById('totalStudents');
+        const todayPresent = document.getElementById('todayPresent');
+        const todayAbsent = document.getElementById('todayAbsent');
+        const dateSelect = document.getElementById('dateSelect');
+        const attendanceList = document.getElementById('attendanceList');
+        const emptyMessage = document.getElementById('emptyMessage');
+        const saveBar = document.getElementById('saveBar');
+        const saveBtn = document.getElementById('saveBtn');
+
+        // ==================== AUTH ====================
+        async function hashPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        function showLogin() {
+            loginOverlay.style.display = 'flex';
+            appLayout.classList.add('hidden');
+            loginError.textContent = '';
+            loginUsername.value = '';
+            loginPassword.value = '';
+        }
+
+        function showApp() {
+            loginOverlay.style.display = 'none';
+            appLayout.classList.remove('hidden');
+            headerUser.textContent = currentAdmin.name;
+            newDate.value = new Date().toISOString().split('T')[0];
+            loadCourses();
+        }
+
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const username = loginUsername.value.trim();
+            const password = loginPassword.value;
+            const hash = await hashPassword(password);
+            const admin = admins.find(a => a.username === username && a.passwordHash === hash);
+
+            if (!admin) {
+                loginError.textContent = 'Sai tên đăng nhập hoặc mật khẩu.';
+                return;
+            }
+
+            // Check attendance permission
+            if (!admin.permissions || !admin.permissions.attendance || !admin.permissions.attendance.view) {
+                loginError.textContent = 'Bạn không có quyền truy cập điểm danh.';
+                return;
+            }
+
+            currentAdmin = admin;
+            sessionStorage.setItem('currentAdmin', JSON.stringify(admin));
+            showApp();
+        });
+
+        logoutBtn.addEventListener('click', function() {
+            currentAdmin = null;
+            sessionStorage.removeItem('currentAdmin');
+            showLogin();
+        });
+
+        // ==================== COURSES ====================
+        function loadCourses() {
+            courseSelect.innerHTML = '<option value="">-- Chọn khóa học --</option>';
+            courses.filter(c => c.status === 'Đang mở').forEach(c => {
+                const text = c.month ? c.name + ' - Tháng ' + c.month : c.name;
+                courseSelect.innerHTML += '<option value="' + c.id + '">' + text + '</option>';
+            });
+        }
+
+        courseSelect.addEventListener('change', function() {
+            const courseId = courseSelect.value;
+            if (courseId) {
+                // Auto-set month from course
+                const course = courses.find(c => c.id === courseId);
+                if (course && course.month) {
+                    monthFilter.value = course.month;
+                }
+            }
+            loadDateList();
+            renderAttendance();
+        });
+
+        monthFilter.addEventListener('change', function() {
+            loadDateList();
+            renderAttendance();
+        });
+
+        // ==================== DATES ====================
+        function getCourseDates(courseId) {
+            const selectedMonth = monthFilter.value;
+            let dates = [...new Set(attendances.filter(a => a.courseId === courseId).map(a => a.date))];
+            if (selectedMonth) {
+                dates = dates.filter(d => new Date(d).getMonth() + 1 === parseInt(selectedMonth));
+            }
+            return dates.sort((a, b) => a.localeCompare(b));
+        }
+
+        function loadDateList() {
+            const courseId = courseSelect.value;
+            if (!courseId) {
+                dateListContainer.classList.add('hidden');
+                return;
+            }
+
+            const dates = getCourseDates(courseId);
+            if (dates.length === 0) {
+                dateListContainer.classList.add('hidden');
+                return;
+            }
+
+            dateListContainer.classList.remove('hidden');
+            dateList.innerHTML = dates.map(d => {
+                const formatted = new Date(d + 'T00:00:00').toLocaleDateString('vi-VN');
+                return '<span class="date-tag">' + formatted +
+                    '<button class="delete-date" data-date="' + d + '" title="Xóa">✕</button></span>';
+            }).join('');
+
+            dateList.querySelectorAll('.delete-date').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    deleteDate(this.dataset.date);
+                });
+            });
+
+            // Update date select dropdown
+            dateSelect.innerHTML = '<option value="">-- Chọn ngày --</option>';
+            dates.forEach(d => {
+                const formatted = new Date(d + 'T00:00:00').toLocaleDateString('vi-VN');
+                dateSelect.innerHTML += '<option value="' + d + '">' + formatted + '</option>';
+            });
+        }
+
+        addDateBtn.addEventListener('click', function() {
+            if (!currentAdmin.permissions.attendance.add) {
+                alert('Bạn không có quyền thêm ngày.');
+                return;
+            }
+
+            const courseId = courseSelect.value;
+            const date = newDate.value;
+
+            if (!courseId) {
+                alert('Vui lòng chọn khóa học.');
+                return;
+            }
+            if (!date) {
+                alert('Vui lòng chọn ngày.');
+                return;
+            }
+
+            // Check month
+            const selectedMonth = monthFilter.value;
+            if (selectedMonth) {
+                const dateMonth = new Date(date).getMonth() + 1;
+                if (dateMonth !== parseInt(selectedMonth)) {
+                    alert('Ngày không thuộc tháng đã chọn.');
+                    return;
+                }
+            }
+
+            // Check duplicate
+            const existingDates = [...new Set(attendances.filter(a => a.courseId === courseId).map(a => a.date))];
+            if (existingDates.includes(date)) {
+                alert('Ngày này đã tồn tại.');
+                return;
+            }
+
+            // Add attendance records for all enrolled students
+            const enrolledIds = enrollments.filter(e => e.courseId === courseId).map(e => e.studentId);
+            enrolledIds.forEach(sid => {
+                attendances.push({
+                    id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
+                    courseId: courseId,
+                    date: date,
+                    studentId: sid,
+                    present: false,
+                    createdAt: new Date().toISOString()
+                });
+            });
+
+            saveAttendances();
+            loadDateList();
+            dateSelect.value = date;
+            renderAttendance();
+        });
+
+        function deleteDate(date) {
+            if (!currentAdmin.permissions.attendance.delete) {
+                alert('Bạn không có quyền xóa ngày.');
+                return;
+            }
+            const courseId = courseSelect.value;
+            const formatted = new Date(date + 'T00:00:00').toLocaleDateString('vi-VN');
+            if (!confirm('Xóa dữ liệu điểm danh ngày ' + formatted + '?')) return;
+
+            attendances = attendances.filter(a => !(a.courseId === courseId && a.date === date));
+            saveAttendances();
+            loadDateList();
+            renderAttendance();
+        }
+
+        // ==================== ATTENDANCE ====================
+        dateSelect.addEventListener('change', function() {
+            renderAttendance();
+        });
+
+        function renderAttendance() {
+            const courseId = courseSelect.value;
+            const selectedDate = dateSelect.value;
+
+            if (!courseId) {
+                attendanceCard.classList.add('hidden');
+                emptyMessage.classList.remove('hidden');
+                emptyMessage.textContent = 'Chọn khóa học để bắt đầu điểm danh.';
+                saveBar.classList.add('hidden');
+                return;
+            }
+
+            const enrolledIds = enrollments.filter(e => e.courseId === courseId).map(e => e.studentId);
+            const enrolledStudents = students.filter(s => enrolledIds.includes(s.id)).sort((a, b) => a.name.localeCompare(b.name, 'vi'));
+
+            if (enrolledStudents.length === 0) {
+                attendanceCard.classList.add('hidden');
+                emptyMessage.classList.remove('hidden');
+                emptyMessage.textContent = 'Khóa học chưa có học viên ghi danh.';
+                saveBar.classList.add('hidden');
+                return;
+            }
+
+            emptyMessage.classList.add('hidden');
+            attendanceCard.classList.remove('hidden');
+
+            const course = courses.find(c => c.id === courseId);
+            attendanceTitle.textContent = 'Điểm Danh' + (course ? ' - ' + (course.month ? course.name + ' T' + course.month : course.name) : '');
+            totalStudents.textContent = enrolledStudents.length;
+
+            if (!selectedDate) {
+                attendanceList.innerHTML = '<li class="empty-message" style="padding:1rem;">Chọn ngày để điểm danh.</li>';
+                todayPresent.textContent = '0';
+                todayAbsent.textContent = '0';
+                saveBar.classList.add('hidden');
+                return;
+            }
+
+            saveBar.classList.remove('hidden');
+
+            // Render student list with checkboxes
+            let presentCount = 0;
+            attendanceList.innerHTML = '';
+            enrolledStudents.forEach(s => {
+                const record = attendances.find(a => a.studentId === s.id && a.courseId === courseId && a.date === selectedDate);
+                const isChecked = record && record.present;
+                if (isChecked) presentCount++;
+
+                const totalAtt = attendances.filter(a => a.studentId === s.id && a.courseId === courseId && a.present).length;
+
+                const li = document.createElement('li');
+                li.className = 'attendance-item';
+                li.innerHTML = '<input type="checkbox" data-student="' + s.id + '"' + (isChecked ? ' checked' : '') + '>' +
+                    '<span class="student-name">' + s.name + '</span>' +
+                    '<span class="student-count">' + totalAtt + ' buổi</span>';
+                attendanceList.appendChild(li);
+
+                // Update summary on toggle
+                li.querySelector('input').addEventListener('change', function() {
+                    updateSummary();
+                });
+            });
+
+            todayPresent.textContent = presentCount;
+            todayAbsent.textContent = enrolledStudents.length - presentCount;
+        }
+
+        function updateSummary() {
+            const checkboxes = attendanceList.querySelectorAll('input[type="checkbox"]');
+            let present = 0;
+            checkboxes.forEach(cb => { if (cb.checked) present++; });
+            todayPresent.textContent = present;
+            todayAbsent.textContent = checkboxes.length - present;
+        }
+
+        // ==================== SAVE ====================
+        saveBtn.addEventListener('click', function() {
+            if (!currentAdmin.permissions.attendance.edit) {
+                alert('Bạn không có quyền sửa điểm danh.');
+                return;
+            }
+
+            const courseId = courseSelect.value;
+            const selectedDate = dateSelect.value;
+
+            if (!courseId || !selectedDate) {
+                alert('Vui lòng chọn khóa học và ngày.');
+                return;
+            }
+
+            // Update attendance records for selected date
+            const checkboxes = attendanceList.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(cb => {
+                const studentId = cb.dataset.student;
+                const record = attendances.find(a => a.studentId === studentId && a.courseId === courseId && a.date === selectedDate);
+                if (record) {
+                    record.present = cb.checked;
+                }
+            });
+
+            saveAttendances();
+            renderAttendance();
+            alert('Đã lưu điểm danh thành công!');
+        });
+
+        // ==================== SAVE HELPERS ====================
+        function saveAttendances() {
+            localStorage.setItem('attendances', JSON.stringify(attendances));
+        }
+
+        // ==================== INIT ====================
+        if (currentAdmin) {
+            showApp();
+        } else {
+            showLogin();
+        }
+
+        // Auto-select current month
+        var now = new Date();
+        var currentMonth = now.getMonth() + 1;
+        if (currentMonth >= 1 && currentMonth <= 12) {
+            monthFilter.value = currentMonth;
+        }
+    })();
+    </script>
+</body>
+</html>
