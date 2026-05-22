@@ -160,6 +160,11 @@ const changePasswordForm = document.getElementById('changePasswordForm');
 const changePasswordInfo = document.getElementById('changePasswordInfo');
 const changePasswordError = document.getElementById('changePasswordError');
 
+// Backup & Restore
+const exportBackupBtn = document.getElementById('exportBackupBtn');
+const restoreBackupBtn = document.getElementById('restoreBackupBtn');
+const restoreFileInput = document.getElementById('restoreFileInput');
+
 // Report
 const reportPeriod = document.getElementById('reportPeriod');
 const reportYear = document.getElementById('reportYear');
@@ -311,6 +316,9 @@ logoutBtn.addEventListener('click', handleLogout);
 adminForm.addEventListener('submit', handleAdminSubmit);
 adminCancelBtn.addEventListener('click', cancelAdminEdit);
 changePasswordForm.addEventListener('submit', handlePasswordChange);
+exportBackupBtn.addEventListener('click', handleExportBackup);
+restoreBackupBtn.addEventListener('click', () => restoreFileInput.click());
+restoreFileInput.addEventListener('change', handleRestoreBackup);
 
 // Report event listeners
 reportPeriod.addEventListener('change', handleReportPeriodChange);
@@ -462,6 +470,12 @@ function applyPermissions() {
     if (attendFormSection) {
         addDateBtn.style.display = checkPermission('attendance', 'add') ? 'inline-block' : 'none';
         saveAttendanceBtn.style.display = checkPermission('attendance', 'edit') ? 'inline-block' : 'none';
+    }
+
+    // Backup & Restore - only for super admin
+    const backupSection = document.getElementById('backupRestoreSection');
+    if (backupSection) {
+        backupSection.style.display = (currentAdmin && currentAdmin.role === 'super') ? 'block' : 'none';
     }
 }
 
@@ -687,6 +701,91 @@ async function handlePasswordChange(e) {
 
     closeChangePassword();
     alert('Đổi mật khẩu thành công!');
+}
+
+// ==================== BACKUP & RESTORE ====================
+function handleExportBackup() {
+    if (!currentAdmin || currentAdmin.role !== 'super') {
+        alert('Chỉ Super Admin mới có quyền xuất backup.');
+        return;
+    }
+
+    const backupData = {
+        version: '1.0',
+        exportedAt: new Date().toISOString(),
+        students: students,
+        courses: courses,
+        enrollments: enrollments,
+        attendances: attendances,
+        paymentRecords: paymentRecords
+    };
+
+    const jsonStr = JSON.stringify(backupData, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    a.href = url;
+    a.download = `backup_dulieu_${dateStr}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    alert('Xuất backup thành công!');
+}
+
+function handleRestoreBackup(e) {
+    if (!currentAdmin || currentAdmin.role !== 'super') {
+        alert('Chỉ Super Admin mới có quyền khôi phục dữ liệu.');
+        restoreFileInput.value = '';
+        return;
+    }
+
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!confirm('⚠️ CẢNH BÁO: Thao tác này sẽ XÓA TOÀN BỘ dữ liệu hiện tại và thay thế bằng dữ liệu từ file backup.\n\nBạn có chắc chắn muốn tiếp tục?')) {
+        restoreFileInput.value = '';
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = JSON.parse(e.target.result);
+
+            // Validate backup structure
+            if (!data.students || !data.courses || !data.enrollments) {
+                alert('File backup không đúng định dạng. Thiếu dữ liệu bắt buộc.');
+                restoreFileInput.value = '';
+                return;
+            }
+
+            // Replace all data
+            students = data.students || [];
+            courses = data.courses || [];
+            enrollments = data.enrollments || [];
+            attendances = data.attendances || [];
+            paymentRecords = data.paymentRecords || [];
+
+            // Save all to localStorage
+            saveStudents();
+            saveCourses();
+            saveEnrollments();
+            saveAttendances();
+            savePaymentRecords();
+
+            // Re-render everything
+            renderAll();
+
+            restoreFileInput.value = '';
+            alert(`Khôi phục dữ liệu thành công!\n- Học viên: ${students.length}\n- Khóa học: ${courses.length}\n- Ghi danh: ${enrollments.length}\n- Điểm danh: ${attendances.length}\n- Thanh toán: ${paymentRecords.length}`);
+        } catch (err) {
+            alert('Lỗi đọc file backup: ' + err.message);
+            restoreFileInput.value = '';
+        }
+    };
+    reader.readAsText(file);
 }
 
 // ==================== REPORT ====================

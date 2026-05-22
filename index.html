@@ -1124,6 +1124,24 @@
                 </table>
                 <p class="empty-message" id="adminEmptyMessage">Chưa có quản trị viên nào.</p>
             </section>
+
+            <!-- Backup & Restore -->
+            <section class="form-section" id="backupRestoreSection">
+                <h2>Sao Lưu & Khôi Phục Dữ Liệu</h2>
+                <p class="form-hint">Chỉ Super Admin mới có quyền thực hiện. Xuất file backup toàn bộ dữ liệu hoặc khôi phục từ file backup.</p>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Xuất File Backup</label>
+                        <button class="btn btn-primary" id="exportBackupBtn">Xuất Backup</button>
+                    </div>
+                    <div class="form-group">
+                        <label>Khôi Phục Dữ Liệu</label>
+                        <input type="file" id="restoreFileInput" accept=".json" style="display:none;">
+                        <button class="btn btn-danger" id="restoreBackupBtn">Upload & Khôi Phục</button>
+                    </div>
+                </div>
+                <p class="form-hint" style="color: var(--danger); margin-top: 0.5rem;">⚠️ Khôi phục sẽ xóa toàn bộ dữ liệu hiện tại và thay thế bằng dữ liệu từ file backup.</p>
+            </section>
         </div>
         </main>
     </div>
